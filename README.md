@@ -1,7 +1,7 @@
 # WAC_arrayMethods
 Follow the same process that we followed in the testing series for these array methods on your own. I recommend doing them in the order they appear below.
 
-Verify your answers by comparing the behavior of your code against the native equivalents. After verifying, compare your code against [solutions from other students] (https://github.com/gordonmzhu/exercises/issues/1).
+Verify your answers by comparing the behavior of your code against the native equivalents. After verifying, compare your code against [solutions from other students](https://github.com/gordonmzhu/exercises/issues/1).
 
 Finally, before you continue, post your code as well so that others can learn from your approach.
 
