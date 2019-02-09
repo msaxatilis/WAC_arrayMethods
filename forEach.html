@@ -1,0 +1,51 @@
+<script src="../simpletest.js"></script>
+
+<script>
+// this tests building our own forEach function based on the forEach method available to arrays
+// look at the forEach method documentation online; each test builds up to using all the parameters available
+
+function forEach(array, callback, optionalThisObject) {
+	var forEachCallback = callback;
+
+	if (optionalThisObject) {
+		forEachCallback = callback.bind(optionalThisObject);
+	}
+	for (var i = 0; i < array.length; i++) {
+		forEachCallback(array[i], i, array); /* need to pass in second parameter 'i' for third test to pass and 'array' for fourth test */
+	}
+}
+
+tests({
+	'It should run the callback function array.length times': function() { 
+  		var numberOfTimesCallbackHasRun = 0;
+			forEach([1, 2, 3], function() {
+			numberOfTimesCallbackHasRun++;
+	 	 });
+		eq(numberOfTimesCallbackHasRun, 3);
+  	},
+  	'It should pass in the ith element as the first argument to the callback.': function() { 
+		forEach([1], function (value) {
+		eq(value, 1);
+	  });
+  	},
+  	'It should pass in the ith position as the second argument to the callback.': function() { 
+		forEach([1], function(value, position) {
+		eq(position, 0);
+ 	  });
+  	},
+  	'It should pass in the original array as the third argument to the callback.': function() { 
+		var testArray = [1, 2, 3]
+		forEach(testArray, function (value, position, originalArray) {
+	  });
+
+  	},
+  	'It should accept an optional this object.': function () {
+  		
+  		forEach([1], function () {
+  			// Inside here, this should be equal to configurableThisObject.
+  			// this.description should be equal to 'Configurable this object'.
+  			eq(this.description, 'I should be accessible inside of the callback')
+  		}, {description: 'I should be accessible inside of the callback'});
+  	}
+});
+</script>

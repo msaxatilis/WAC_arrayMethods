@@ -1,0 +1,155 @@
+<script src="../simpletest.js"></script>
+
+<script>
+// this tests building our own some function
+//
+// The some() method tests whether at least one element in the array pass the test implemented by the provided function.
+
+// Prototype implementation:
+	// function some(callback(element, index, array)) {
+	//    for (var i = 0; i < array.length; i++) {
+    //      var result = callback (array[i], i, array))
+	//          if (result === true) {
+    //          return true;
+    //          };
+    //          return false;
+	//       };
+	// }
+
+// Function signature:
+	// some(callback(element[,index[, array]])[,thisArg])
+
+// Callback parameters:
+	// element
+	// index
+	// array
+
+// Return value:
+	// returns true if the callback function returns a truthy value for every array element; otherwise, false.
+    // returns false for any condition put on an empty array.    
+    
+// Requirements: 
+    // It should pass in the ith element as the first argument to the callback.
+    // It should pass in the ith position as the second argument to the callback.
+    // It should pass in the original array element as the third argument to the callback.
+    // It should accept an optional this argument.
+
+    // If callback is satisfied (i.e. one element is truthy), it should return true.
+    // It should return false for an empty array.
+    
+    // It should not modify the array on which it is called.
+    // If an existing, unvisited element of the array is changed by callback, its value passed to the callback will be the value at the time that some visits that element's index
+
+    // It should ignore elements appended to the array after the callback is executed.
+    // It should ignore deleted elements.
+    // It should ignore holes.
+
+
+function some(array, callback, optionalThis) {
+    var length = array.length;
+    var someCallback = callback;
+
+    if (optionalThis) {
+        someCallback = callback.bind(optionalThis);
+    };
+
+    for (var i = 0; i < length; i++) {
+            if (i in array) {
+                if (someCallback(array[i], i, array) === true) {
+                    return true;
+                };
+            }
+    };
+    return false;
+};
+
+tests({
+    'It should pass in the ith element as the first argument to the callback.': function() { 
+        var testArray = [1];
+        some(testArray, function (value) {
+		eq(value, 1);
+	    });
+  	},
+  	'It should pass in the ith position as the second argument to the callback.': function() { 
+        var testArray = [1];
+        some(testArray, function(value, position) {
+		eq(position, 0);
+ 	    });
+  	},
+  	'It should pass in the original array as the third argument to the callback.': function() { 
+        var testArray = [1];
+		some(testArray, function (value, position, array) {
+            eq(array, testArray);
+        });
+  	},
+  	'It should accept an optional this object.': function () {		 
+        some([1], function (value, position, array) {
+  			eq(this.description, 'I should be accessible inside of the callback')
+  		}, {description: 'I should be accessible inside of the callback'});
+  	},
+  	'It should immediately return true if one element returns a truthy value.': function() {
+        var testArray = [1, 2, 3, 4];
+        some(testArray, function (value, position, array) {
+            return value === 2;
+            eq(position, 1);
+        });
+  	},
+      'It should return false for an empty array.': function () {
+        var testArray=[];
+        var emptyArray = some(testArray, function(value, position, array) {
+        });
+        eq(emptyArray, false);
+    },
+      'It should not modify the array on which it is called.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1];
+        some(testArray, function (value, position, array) {         
+            eq(array[0], 1);
+            eq(array.length, 1);
+        });   
+    },  
+      'If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that some visits that elements index.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1,5,3];
+        some(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            if (position === 0) {
+                testArray.splice(1,1,4);
+            };
+            return value === 4;
+        });   
+        eq(numberOfTimesCallbackHasRun, 2); //why is this eq test outside of the call to every? I had it after return but then test passes
+    },  
+    'It should ignore elements appended to the array after the callback is executed.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        some([1, 2, 3], function (value, position, array) {
+            numberOfTimesCallbackHasRun++
+            array.push(4);
+            return value > 0;
+        });   
+        eq(numberOfTimesCallbackHasRun, 1);
+    },
+    'It should ignore deleted elements.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1,2]
+        some(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            if (position === 0) {
+                testArray.splice(0,1);
+            };
+            return value < 3;
+        });
+        eq(numberOfTimesCallbackHasRun,1); // originally had this just below return inside of every function but return forces function to end and never runs eq test
+    },
+    'It should ignore holes.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [,1];
+        some(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            return value === 1;
+        });
+        eq(numberOfTimesCallbackHasRun, 1);
+    },
+
+});
+</script>

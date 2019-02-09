@@ -1,0 +1,158 @@
+<script src="../simpletest.js"></script>
+
+<script>
+// this tests building our own every function
+//
+// The every() method tests whether all elements in the array pass the test implemented by the provided function.
+
+// Prototype implementation:
+	// function every(callback(element, index, array)) {
+	//    for (var i = 0; i < array.length; i++) {
+    //      var result = callback (array[i], i, array))
+	//          if (result === true) {
+    //          return true;
+    //          };
+    //          return false;
+	//       };
+	// }
+
+// Function signature:
+	// every(callback(element[,index[, array]])[,thisArg])
+
+// Callback parameters:
+	// element
+	// index
+	// array
+
+// Return value:
+	// true if the callback function returns a truthy value for every array element; otherwise, false.
+    // This method returns true for any condition put on an empty array.    
+    
+// Requirements: 
+    // It should pass in the ith element as the first argument to the callback.
+    // It should pass in the ith position as the second argument to the callback.
+    // It should pass in the original array element as the third argument to the callback.
+    // It should accept an optional this argument.
+
+    // It should immediately return false if one element returns a falsy value.
+    // If callback is satisfied (i.e. returns truthy value for all elements), it should return true.
+    // It should not modify the array on which it is called.
+    // It should ignore elements appended to the array after the callback is executed.
+    // If an existing, unvisited element of the array is changed by callback, its value passed to the callback will be the value at the time that every visits that element's index
+    // It should ignore deleted elements.
+    // It should ignore holes.
+    // It should return true for an empty array.
+
+function every(array, callback, optionalThis) {
+    var length = array.length;
+    var everyCallback = callback;
+
+    if (optionalThis) {
+        everyCallback = callback.bind(optionalThis);
+    };
+    
+    // if element is deleted array length will be less than original array length
+    // how to test this and skip deleted?
+
+    for (var i = 0; i < length; i++) {
+            if (i in array) {
+                if (everyCallback(array[i], i, array) === false) {
+                    return false;
+                };
+            }
+            // if (everyCallback(array[i], i, array) === false) {
+            //     return false;
+            // };
+    };
+    return true;
+};
+
+tests({
+    'It should pass in the ith element as the first argument to the callback.': function() { 
+        var testArray = [1];
+        every(testArray, function (value) {
+		eq(value, 1);
+	    });
+  	},
+  	'It should pass in the ith position as the second argument to the callback.': function() { 
+        var testArray = [1];
+        every(testArray, function(value, position) {
+		eq(position, 0);
+ 	    });
+  	},
+  	'It should pass in the original array as the third argument to the callback.': function() { 
+        var testArray = [1];
+		every(testArray, function (value, position, array) {
+            eq(array, testArray);
+        });
+  	},
+  	'It should accept an optional this object.': function () {		 
+        every([1], function (value, position, array) {
+  			eq(this.description, 'I should be accessible inside of the callback')
+  		}, {description: 'I should be accessible inside of the callback'});
+  	},
+  	'It should immediately return false if one element returns a falsy value.': function() {
+        var testArray = [1, 2, 3, 4];
+        every(testArray, function (value, position, array) {
+            return value >2;
+            eq(position, 0);
+        });
+  	},
+      'It should not modify the array on which it is called.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1];
+        every(testArray, function (value, position, array) {         
+            eq(array[0], 1);
+            eq(array.length, 1);
+        });   
+    },  
+      'It should not visit elements that are appended to the array after the call to find begins.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        every([1, 2, 3], function (value, position, array) {
+            numberOfTimesCallbackHasRun++
+            array.push(4);
+            return value > 0;
+        });   
+        eq(numberOfTimesCallbackHasRun, 3);
+    },
+  	'If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that every visits that elements index.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1,5,3];
+        every(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            if (position === 0) {
+                testArray.splice(1,1,4);
+            };
+            return value < 5;
+        });   
+        eq(numberOfTimesCallbackHasRun, 3); //why is this eq test outside of the call to every? I had it after return but then test passes
+    },
+    'It should ignore deleted elements.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [1,2]
+        every(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            if (position === 0) {
+                testArray.splice(0,1);
+            };
+            return value < 3;
+        });
+        eq(numberOfTimesCallbackHasRun,1); // originally had this just below return inside of every function but return forces functiont to end and never runs eq test
+    },
+    'It should ignore holes.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var testArray = [,1];
+        every(testArray, function (value, position, array) {
+            numberOfTimesCallbackHasRun++;
+            return value === 1;
+        });
+        eq(numberOfTimesCallbackHasRun, 1);
+    },
+    'It should return true for an empty array.': function () {
+        var testArray=[];
+        var emptyArray = every(testArray, function(value, position, array) {
+        });
+        eq(emptyArray, true);
+    }
+});
+</script>

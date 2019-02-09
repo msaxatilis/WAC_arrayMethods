@@ -1,0 +1,147 @@
+<script src="../simpletest.js"></script>
+
+<script>
+// this tests building our own find function
+//
+// Example 1: function has access to each element
+// find ([1, 2, 3], function (number) {
+// 		console.log(number);
+// 	});
+// 	
+// Example 2: function has access to each element and index
+// find ([1, 2, 3], function (number, index) {
+// 		console.log(index);
+// 	});
+// 
+// Example 3: function has access to each element, index, and array
+// find ([1, 2, 3], function (number, index, originalArray) {
+// 		console.log(originalArray);
+// 	});
+// 	
+// Example 4: function accepts optional 'this' argument
+// find ([1, 2, 3], function () {
+// 		console.log(this.name);
+// 	}, {name: 'Brian'});
+// 
+// Example 5: 
+// var testArray = [1, 2, 3];
+// var foundElement = find(testArray, function (element) {
+// 		return element > 1;
+// 	});
+// Expect foundElement to be [2]
+//
+// Example 6: Elements that are appended to the array after the call to find begins will not be visited by callback.
+// var testArray = [1, 2, 3];
+// var foundElement = find(testArray, function (element) {
+//     testArray.splice(0,0,5);
+//     return element > 2;
+// });
+// Expect foundElement to be [3]
+//
+// Example 7: If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that find visits that element's index
+// var testArray = [1, 2, 3];
+// var foundElement = find(testArray, function (element, index) {
+//     if (index === 0) {
+//         delete testArray[1];
+//     };
+//     return element > 1
+// }) 
+// Expect foundElement to be '3'; callback would have grabbed '2' but the if statement deleted the element at index 1
+//
+// Example 8: Elements that are deleted are still visited.
+// var testArray = [1, 2, 3];
+// var foundElement = find(testArray, function (element, index) {
+//     if (index === 0) {
+//         delete testArray[1];
+//     };
+//     return testArray[1];
+// }) 
+// Expect foundElement = 'undefined'
+
+
+function find (array, callback, optionalThisObject) {
+    var findCallback = callback;
+    var length = array.length;
+    var originalArray = array;
+   
+    // bind this object to function
+    if (optionalThisObject) {
+        findCallback = callback.bind(optionalThisObject);
+    };
+
+    // iterate callback until callback is satisfied
+    
+	for (var i = 0; i < length; i++) {
+		if  (findCallback(originalArray[i], i, originalArray)) {
+            return originalArray[i];
+        };
+    }
+    return undefined;
+};
+
+tests({
+    'It should pass in the ith element as the first argument to the callback.': function() { 
+        var testArray = [1];
+        find(testArray, function (value) {
+		eq(value, 1);
+	    });
+  	},
+  	'It should pass in the ith position as the second argument to the callback.': function() { 
+        var testArray = [1];
+        find(testArray, function(value, position) {
+		eq(position, 0);
+ 	    });
+  	},
+  	'It should pass in the original array as the third argument to the callback.': function() { 
+        var testArray = [1, 2, 3, 4];
+		find(testArray, function (value, position, originalArray) {
+		eq(originalArray, testArray);
+	    });
+  	},
+  	'It should accept an optional this object.': function () {		 
+        find([1], function (value, position, originalArray) {
+  			eq(this.description, 'I should be accessible inside of the callback')
+  		}, {description: 'I should be accessible inside of the callback'});
+  	},
+  	'It should return the first value in the array that satisfies the callback': function() {
+        var testArray = [1, 2, 3, 4];
+        find(testArray, function (value, position, originalArray) {
+            return value = 3;
+            eq(value, 2);
+	    });
+  	},
+  	'It should not visit elements that are appended to the array after the call to find begins.': function () {
+        debugger;
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = find([1, 2, 3], function (element, index, array) {
+            numberOfTimesCallbackHasRun++
+            array.push(4);
+            return element > 3;
+            });   
+        eq(numberOfTimesCallbackHasRun, 3);
+        eq(foundValue, undefined);
+    },
+  	'If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that find visits that elements index.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = find([1, 2, 3], function (element, index, array) {
+            numberOfTimesCallbackHasRun++;
+            if (index === 0) {
+                array.splice(1,1,4)
+            };
+            return element > 2;
+            });   
+        eq(numberOfTimesCallbackHasRun, 2);
+        eq(foundValue, 4);
+    },
+    'Elements that are deleted are still visited.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = find([1, 2, 3], function (element, index, array) {
+            numberOfTimesCallbackHasRun++;
+            if (index===0) {
+                array.splice(1,1);
+            };
+        });   
+        eq(numberOfTimesCallbackHasRun, 3);
+    }
+});
+</script>

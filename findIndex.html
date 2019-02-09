@@ -1,0 +1,130 @@
+<script src="../simpletest.js"></script>
+
+<script>
+// this tests building our own findIndex function
+//
+// The findIndex() method returns the index of the first element in the array that satisfies the provided testing function.
+// Otherwise, it returns -1, indicating no element passed the test.
+
+// Prototype implementation:
+	// function findIndex(callback(element, index, array)) {
+	//    for (var i = 0; i < array.length; i++) {
+    //      var result = callback (array[i], i, array))
+	//          if (result === true) {
+    //          return result;
+    //          };
+    //          return -1;
+	//       };
+	// }
+
+// Function signature:
+	// findIndex(callback(element[,index[, array]])[,thisArg])
+
+// Callback parameters:
+	// element
+	// index
+	// array
+
+// Return value:
+	// Returns a single value.
+
+// Requirements: 
+    // It should pass in the ith element as the first argument to the callback.
+    // It should pass in the ith position as the second argument to the callback.
+    // It should pass in the original array element as the third argument to the callback.
+    // It should accept an optional this argument.
+
+    // It should execute the callback once for every array index until it finds one where callback returns a truthy value and then return that element's index.
+    // If callback never returns truthy value, it should return -1.
+    // If array's length is 0, it should return -1.
+    // It should accept an optional 'this' argument.
+    // It should ignore elements appended to the array after the callback is executed.
+    // If an existing, unvisited element of the array is changed by callback, its value passed to the callback will be the value at the time that findIndex visits that element's index
+    // It should visit deleted elements.
+
+// WHY DOES THE ARRAY.LENGTH STAY THE SAME EVEN WHEN CALLBACK MODIFIES THE ARRAY?
+
+function findIndex(array, callback, optionalThis) {
+    var length = array.length;
+    var findIndexCallback = callback;
+    var originalArray = array;
+
+    if (optionalThis) {
+        findIndexCallback = callback.bind(optionalThis);
+    };
+    
+    for (var i = 0; i < length; i++) {
+            if (findIndexCallback(originalArray[i], i, originalArray)) {
+                return originalArray[i];
+            };
+        };
+    return -1;
+};
+
+tests({
+    'It should pass in the ith element as the first argument to the callback.': function() { 
+        
+        var testArray = [1];
+        findIndex(testArray, function (value) {
+		eq(value, 1);
+	    });
+  	},
+  	'It should pass in the ith position as the second argument to the callback.': function() { 
+        var testArray = [1];
+        findIndex(testArray, function(value, position) {
+		eq(position, 0);
+ 	    });
+  	},
+  	'It should pass in the original array as the third argument to the callback.': function() { 
+        var testArray = [1, 2, 3, 4];
+		findIndex(testArray, function (value, position, originalArray) {
+		eq(originalArray, testArray);
+	    });
+  	},
+  	'It should accept an optional this object.': function () {		 
+        findIndex([1], function (value, position, originalArray) {
+  			eq(this.description, 'I should be accessible inside of the callback')
+  		}, {description: 'I should be accessible inside of the callback'});
+  	},
+  	'It should return the position in the array for the value that satisfies the callback': function() {
+        var testArray = [1, 2, 3, 4];
+        findIndex(testArray, function (value, position, originalArray) {
+            return value = 2;
+            eq(position, 1);
+	    });
+  	},
+  	'It should not visit elements that are appended to the array after the call to find begins.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = findIndex([1, 2, 3], function (value, position, array) {
+            numberOfTimesCallbackHasRun++
+            array.push(4);
+            return value > 3;
+            });   
+        eq(numberOfTimesCallbackHasRun, 3);
+        eq(foundValue, -1);
+    },
+  	'If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that find visits that elements index.': function () {
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = findIndex([1, 2, 3], function (element, index, array) {
+            numberOfTimesCallbackHasRun++;
+            if (index === 0) {
+                array.splice(1,1,4)
+            };
+            return element > 2;
+            });   
+        eq(numberOfTimesCallbackHasRun, 2);
+        eq(foundValue, 4);
+    },
+    'Elements that are deleted are still visited.': function () {
+        debugger;
+        var numberOfTimesCallbackHasRun = 0;
+        var foundValue = findIndex([1, 2, 3], function (element, index, array) {
+            numberOfTimesCallbackHasRun++;
+            if (index===0) {
+                array.splice(1,1);
+            };
+        });   
+        eq(numberOfTimesCallbackHasRun, 3);
+    }
+});
+</script>

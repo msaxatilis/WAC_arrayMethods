@@ -1,0 +1,148 @@
+<script src="../simpletest.js"></script>
+
+<script>
+	
+// This tests building our own concat function based on the concat method available to arrays
+// 
+// The concat method creates a new array consisting of the elements in the object on which it is called, followed in order by, 
+// for each argument, the elements of that argument (if the argument is an array) or the argument itself (if the argument is not an array). 
+// It does not recurse into nested array arguments.
+// 
+// Prototype implementation:
+
+// function concat(originalArray, newValue) {
+// 	var newArray = [];
+// 	var numberOfArguments = arguments.length;
+// 	if (numberOfArguments > 0) {
+// 		/* begin pushing elements to new array until arguments are exhausted
+// 		first set loop to arguments.length */
+// 		for (i = 0; i < numberOfArguments + 1; i++) {
+// 			if (newValue.isArray === true) {
+// 				/* iterate through array argument to push each element to newArray */
+// 				for (a = 0; a < newValue.length; a++) {
+// 					newArray.push(newValue[a]);
+// 				}
+// 					} else {
+// 					/* push element to newArray */
+// 					newArray.push(newValue)
+// 			};
+// 		};
+// 		return newArray;
+// 	};
+// }
+
+// 
+// Recursive Case:
+// 	If newValue has more than one argument
+// 	If newValue = array, push each element to the newArray
+// 
+// Base Case:
+//  Push newValue to newArray and return newArray.
+
+// Function signature:
+	// concat(originalArray, newValue)
+
+// Return value:
+	// Returns a new array.
+
+// Requirements: 
+
+//  It should copy the object references of the elements in the original array into the new array.
+
+//  If the argument is not an array, it should push the argument itself to the new array. 
+
+//  If the argument is an array:
+// 		It should push a copy the elements of that argument to the new array.
+// 		It should not recurse into nested array arguments.
+//  	It should not change the existing arrays.
+
+//  It should accept a combination of arrays and values as arguments.
+//  It should not alter this.
+// 	If the newValue is undefined, it should return a shallow copy of the existing array on which it is called.
+
+function concat (originalArray, newValues) {
+	var newArray = [];
+	for (var i = 0; i < originalArray.length; i++) {
+		newArray.push(originalArray[i]);
+	};
+		// No newValues
+		if (arguments.length < 2) {
+			return newArray;
+		} else {
+			if (newValues === undefined) {
+				return newArray;
+			} else {
+				// Loop through arguments
+				for (var j = 1; j < arguments.length; j++) {
+					// Check if newValues is an array
+					if (Array.isArray(arguments[j])) {
+						// Loop through array and push to newArray
+						for (var k = 0; k < arguments[j].length; k++) {
+							var currentArgument = arguments[j];
+							newArray.push(currentArgument[k]);
+						};
+					} else {
+						// push value to newArray
+						newArray.push(arguments[j]);
+						};
+				};
+			return newArray;
+		};
+	};
+};
+
+
+tests({
+	'It should copy the object references of the elements in the original array into the new array.': function() { 
+		var originalArray = [1];
+		var newArray = concat(originalArray);
+		eq(newArray.toString(), originalArray.toString());
+	  },
+	'If the argument is not an array, it should push the argument itself to the new array. ': function() { 
+		var originalArray = [1];
+		var newValues = 2;
+		var newArray = concat(originalArray, newValues);
+		eq([1,2].toString(), newArray.toString());
+  	},
+  	'If the argument is an array, it should push a copy the elements of that argument to the new array. ': function() { 
+		var originalArray = [1];
+		var newValues = [2];
+		var newArray = concat(originalArray, newValues);
+		eq([1,2].toString(), newArray.toString());
+	},
+  	'It should not recurse into nested array arguments.': function() { 
+		var originalArray = [1];
+		var newValues = [[2]];
+		var newArray = concat(originalArray, newValues);
+		eq([1,[2]].toString(), newArray.toString());
+	},
+	'It should accept a combination of arrays and values as arguments.': function() { 
+		var originalArray = [1];
+		var newArray = concat(originalArray, [2], 3, [[4, 5]]);
+		eq([1, 2, 3, [4, 5]].toString(), newArray.toString()); 
+	},	
+	'It should not change the existing arrays.': function() { 
+		var originalArray = [1];
+		var testArray = [2];
+		var newArray = concat(originalArray, testArray);
+		eq(originalArray.toString(), [1].toString());
+		eq(testArray.toString(), [2].toString());
+	},
+	// copied from other student
+	'It should not alter this (1).': function() {
+      var returnedArray = concat([], this);
+      eq(returnedArray[0], this);
+	},
+	// 'It should not alter this (2).': function() { 
+	// 	debugger;
+	// 	var testThis = concat([1], [2]);
+	// 	eq(window, this);
+	// },
+	'If the newValue is undefined, it should return a shallow copy of the existing array on which it is called.': function() { 
+		var originalArray = [1];
+		var newValues = undefined;
+		var newArray = concat(originalArray, newValues);
+		eq(newArray.toString(), originalArray.toString());
+	},	
+});
+</script>
