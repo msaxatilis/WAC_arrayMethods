@@ -11,8 +11,8 @@ Finally, before you continue, post your code as well so that others can learn fr
 - [x] Array.prototype.some
 - [x] Array.prototype.reduceRight
 - [x] Array.prototype.concat
-- [ ] Array.prototype.indexOf
-- [ ] Array.prototype.lastIndexOf
+- [x] Array.prototype.indexOf
+- [x] Array.prototype.lastIndexOf
 - [ ] Array.prototype.includes
 - [ ] Array.prototype.slice
 - [ ] Array.prototype.join
